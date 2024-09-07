@@ -1,0 +1,6 @@
+input_sample/
+src/resources/
+*.xml
+*.db
+*.zip
+*.csv

@@ -26,6 +26,14 @@ RUN pip install --no-cache-dir \
     seaborn \
     jupyterlab \
     scikit-learn \
-    plotly
+    plotly \
+    openai \
+    streamlit \
+    langchain \
+    python-dotenv \
+    langchain_openai \
+    langchain_chroma \
+    langchain_community
+
 
 WORKDIR /mnt
