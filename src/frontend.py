@@ -23,9 +23,25 @@ risky_statements = [
     {
         'id': 2,
         'category': 'データ管理',
+        'tier': 2,
+        'highlightText': 'データ共有に関するユーザーのオプトアウト権は制限されています。',
+        'description': 'This is the explanation for term 2.',
+        'originalText': 'データ共有に関するユーザーのオプトアウト権は制限されています。',
+    },
+    {
+        'id': 3,
+        'category': 'データ管理',
         'tier': 3,
         'highlightText': 'サービスのパフォーマンス向上のためにデータが収集されることがあります。',
-        'description': 'This is the explanation for term 2.',
+        'description': 'This is the explanation for term 3.',
+        'originalText': 'サービスのパフォーマンス向上のためにデータが収集されることがあります。original',
+    },
+    {
+        'id': 4,
+        'category': 'データ管理',
+        'tier': 4,
+        'highlightText': 'サービス提供者は、データを定期的に更新・変更する権利を有します。',
+        'description': 'This is the explanation for term 4.',
         'originalText': 'サービスのパフォーマンス向上のためにデータが収集されることがあります。original',
     },
     {
@@ -33,18 +49,18 @@ risky_statements = [
         'category': 'データ管理',
         'tier': 5,
         'highlightText': 'ユーザーが提供したフィードバックは、製品開発に使用される場合があります。',  
-        'description': 'This is the explanation for term 3.',
+        'description': 'This is the explanation for term 5.',
         'originalText': 'ユーザーが提供したフィードバックは、製品開発に使用される場合があります。original',  
     },
 ]
 
 # Tier-specific emojis and highlight colors
 tier_emojis = {
-    1: "⚫",  # Very high risk
-    2: "🔴",  # High risk
-    3: "🟠",  # Medium risk
-    4: "🟡",  # Medium-low risk
-    5: "🟢",  # Low risk
+    1: "⚫☠️",  # Very high risk
+    2: "🔴🔥",  # High risk
+    3: "🟠⚡",  # Medium risk
+    4: "🟡⚠️",  # Medium-low risk
+    5: "🟢✅",  # Low risk
 }
 
 tier_colors = {
@@ -80,7 +96,7 @@ def main():
 
     
         # Show a popover with description and original text when clicked
-        with st.popover(f"Details for {statement['id']}"):
+        with cols[1].popover(f"詳細"):
             st.write(f"**Description:** {statement['description']}")
             st.write(f"**Original Text:** {statement.get('originalText', 'No original text available.')}")
     # Loop through risky statements and render them
