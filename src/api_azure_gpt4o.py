@@ -2,42 +2,39 @@ import os
 import requests
 import json
 import argparse
+from openai import OpenAI  # kotomi用のOpenAIモジュール
 
 # 引数の設定
-parser = argparse.ArgumentParser(description="Analyze contract risks using Azure GPT-4 model with reflection loop.")
+parser = argparse.ArgumentParser(description="Analyze contract risks using either Azure GPT-4 or Cotomi models.")
 parser.add_argument('--file_path', type=str, required=True, help="Path to the text file containing contract data.")
 parser.add_argument('--max_tokens', type=int, default=800, help="Maximum number of tokens to generate.")
 parser.add_argument('--prompt_path', type=str, default=None, help="Path to the text file containing the prompt.")
 parser.add_argument('--max_iterations', type=int, default=5, help="Maximum number of reflection iterations.")
 parser.add_argument('--review_prompt', type=str, default=None, help="Path to the text file containing the review prompt.")
+parser.add_argument('--engine', type=str, required=True, choices=['gpt4o', 'kotomi'], help="Specify the engine to use for inference.")
 args = parser.parse_args()
 
-# APIキーの読み込み
-with open('/root/azure_gpt4o_key.txt') as f:
-    key = f.read().strip()
-
-# APIエンドポイントの設定
-base_url = "https://aoai-ump-just-eastus.openai.azure.com/openai/deployments/aoai-gpt-4o/chat/completions?api-version=2023-05-15"
-
-# リクエストヘッダーの設定
-headers = {
-    'api-key': key,
-    'Content-Type': 'application/json'
-}
-
-# 契約書データの読み込み
+# 共通部分の契約書データとプロンプトの読み込み
 with open(args.file_path) as f:
     text = f.read().strip()
 
-# プロンプトの読み込み
 with open(args.prompt_path) as f:
     prompt = f.read().strip()
 
 with open(args.review_prompt) as f:
     review_prompt = f.read().strip()
 
-def critique_response(response_content):
-    """生成された応答の批評を行う関数"""
+def critique_response_gpt4o(response_content):
+    """Azure GPT-4で生成された応答の批評を行う関数"""
+    with open('/root/azure_gpt4o_key.txt') as f:
+        key = f.read().strip()
+
+    base_url = "https://aoai-ump-just-eastus.openai.azure.com/openai/deployments/aoai-gpt-4o/chat/completions?api-version=2023-05-15"
+    headers = {
+        'api-key': key,
+        'Content-Type': 'application/json'
+    }
+    
     critique_prompt = (
         f"{review_prompt}\n\n"
         f"{response_content}"
@@ -64,18 +61,41 @@ def critique_response(response_content):
     else:
         raise Exception(f"Error during critique: {critique_response.status_code}")
 
-def is_critique_sufficient(critique):
-    """批評が十分かどうかを判定する"""
-    # 批評の最後に出力された 0 か 1 をチェックする
-    if "enough" in critique:
-        return True
-    elif "insufficient" in critique:
-        return False
-    else:
-        raise ValueError("Critique does not contain a valid 0 or 1 for sufficiency check.")
+def critique_response_kotomi(response_content):
+    """Cotomiで生成された応答の批評を行う関数"""
+    with open('/root/cotomi_api_key.txt') as f:
+        key = f.read().strip()
 
-def generate_response():
-    """契約書の内容に基づいて応答を生成する関数"""
+    client = OpenAI(
+        api_key=key, 
+        base_url="https://api.cotomi.nec-cloud.com/oai-api/v1"
+    )
+
+    critique_prompt = f"{review_prompt}\n\n{response_content}"
+    response = client.chat.completions.create(
+        model="cotomi-core-pro-v1.0-awq", 
+        messages=[{"role": "user", "content": critique_prompt}],
+        temperature=0.7,
+        max_tokens=300,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None
+    )
+
+    return response.choices[0].message.content.strip()
+
+def generate_response_gpt4o():
+    """Azure GPT-4で契約書の内容に基づいて応答を生成する関数"""
+    with open('/root/azure_gpt4o_key.txt') as f:
+        key = f.read().strip()
+
+    base_url = "https://aoai-ump-just-eastus.openai.azure.com/openai/deployments/aoai-gpt-4o/chat/completions?api-version=2023-05-15"
+    headers = {
+        'api-key': key,
+        'Content-Type': 'application/json'
+    }
+
     payload = {
         "messages": [
             {"role": "user", "content": prompt + text}
@@ -96,26 +116,60 @@ def generate_response():
     else:
         raise Exception(f"Error during generation: {response.status_code}")
 
-# 生成と批評のループ
-for iteration in range(args.max_iterations):
-    print(f"Iteration {iteration+1}/{args.max_iterations}...")
+def generate_response_kotomi():
+    """Cotomiで契約書の内容に基づいて応答を生成する関数"""
+    with open('/root/cotomi_api_key.txt') as f:
+        key = f.read().strip()
 
-    # 応答を生成
-    generated_response = generate_response()
-    print("Generated Response:")
-    print(generated_response)
+    client = OpenAI(
+        api_key=key, 
+        base_url="https://api.cotomi.nec-cloud.com/oai-api/v1"
+    )
 
-    # 批評を生成
-    critique = critique_response(generated_response)
-    print("Critique:")
-    print(critique)
+    response = client.chat.completions.create(
+        model="cotomi-core-pro-v1.0-awq",
+        messages=[{"role": "user", "content": prompt + text}],
+        temperature=0.7,
+        max_tokens=args.max_tokens,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None
+    )
 
-    # 批評が十分かどうかを判定
-    if is_critique_sufficient(critique):
-        print("The critique is sufficient. Ending loop.")
-        break
+    return response.choices[0].message.content.strip()
+
+def call_gpt4o_reflection():
+    """指定されたエンジンを使用して反映ループを実行する関数"""
+    for iteration in range(args.max_iterations):
+        print(f"Iteration {iteration+1}/{args.max_iterations}...")
+        
+        generated_response = generate_response_gpt4o()
+        if args.engine == 'gpt4o':
+            critique = critique_response_gpt4o(generated_response)
+        elif args.engine == 'kotomi':
+            critique = critique_response_kotomi(generated_response)
+
+        print("Generated Response:")
+        print(generated_response)
+
+        if iteration == args.max_iterations - 1:
+            print("Reached maximum iterations. Ending loop.")
+            break
+
+        print("Critique:")
+        print(critique)
+
+        # 批評が十分かどうかを判定
+        if "enough" in critique:
+            print("The critique is sufficient. Ending loop.")
+            break
+        else:
+            print("The critique is insufficient. Regenerating response...")
+
     else:
-        print("The critique is insufficient. Regenerating response...")
+        print("Reached maximum iterations. Ending loop.")
+    return generated_response
 
-else:
-    print("Reached maximum iterations. Ending loop.")
+# 実行
+call_gpt4o_reflection()

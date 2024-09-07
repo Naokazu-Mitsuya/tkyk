@@ -4,3 +4,6 @@ src/resources/
 *.db
 *.zip
 *.csv
+src/.env
+bfg.jar
+
