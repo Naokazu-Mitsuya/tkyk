@@ -1,4 +1,4 @@
-input_sample/
+# input_sample/
 src/resources/
 *.xml
 *.db

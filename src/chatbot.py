@@ -42,7 +42,7 @@ def initialize_vector_store() -> Chroma:
 def initialize_retriever() -> VectorStoreRetriever:
     """Retrieverの初期化."""
     vector_store = initialize_vector_store()
-    return vector_store.as_retriever()
+    return vector_store.as_retriever().set_search_params(top_k=10)
 
 
 def initialize_chain() -> RunnableSequence:

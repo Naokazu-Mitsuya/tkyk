@@ -1,15 +1,10 @@
 import requests
 import json
-import argparse
-
-# 引数の設定
-parser = argparse.ArgumentParser(description="Analyze contract risks using Azure GPT-4 model.")
-parser.add_argument('file_path', type=str, help="Path to the text file containing contract data.")
-args = parser.parse_args()
 
 # APIキーの読み込み
 with open('/root/azure_gpt4o_key.txt') as f:
     key = f.read().strip()
+
 
 # APIエンドポイントの設定
 base_url = "https://aoai-ump-just-eastus.openai.azure.com/openai/deployments/aoai-gpt-4o/chat/completions?api-version=2023-05-15"
@@ -20,8 +15,8 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-# 契約書データの読み込み（引数からパスを受け取る）
-with open(args.file_path) as f:
+# 契約書データの読み込み
+with open('/mnt/bereal.txt') as f:
     text = f.read().strip()
 
 # リクエストペイロードの設定

@@ -1,13 +1,15 @@
+import os
 import requests
 import json
 import argparse
-from elasticsearch import Elasticsearch  # Elasticsearchを例として使用
 
 # 引数の設定
-parser = argparse.ArgumentParser(description="Analyze contract risks using Azure GPT-4 model with RAG.")
+parser = argparse.ArgumentParser(description="Analyze contract risks using Azure GPT-4 model with reflection loop.")
 parser.add_argument('--file_path', type=str, required=True, help="Path to the text file containing contract data.")
 parser.add_argument('--max_tokens', type=int, default=800, help="Maximum number of tokens to generate.")
 parser.add_argument('--prompt_path', type=str, default=None, help="Path to the text file containing the prompt.")
+parser.add_argument('--max_iterations', type=int, default=5, help="Maximum number of reflection iterations.")
+parser.add_argument('--review_prompt', type=str, default=None, help="Path to the text file containing the review prompt.")
 args = parser.parse_args()
 
 # APIキーの読み込み
@@ -23,55 +25,97 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-# 契約書データの読み込み（引数からパスを受け取る）
+# 契約書データの読み込み
 with open(args.file_path) as f:
-    contract_text = f.read().strip()
+    text = f.read().strip()
 
 # プロンプトの読み込み
-if args.prompt_path:
-    with open(args.prompt_path) as pf:
-        prompt = pf.read().strip()
-else:
-    prompt = "analyze risk on this contract as a user: "
+with open(args.prompt_path) as f:
+    prompt = f.read().strip()
 
-# Elasticsearchを使用して関連するドキュメントを検索
-es = Elasticsearch("http://localhost:9200")  # Elasticsearchのインスタンスに接続
+with open(args.review_prompt) as f:
+    review_prompt = f.read().strip()
 
-# 検索クエリの設定
-query = {
-    "query": {
-        "match": {
-            "content": contract_text  # 契約書に関連する情報を検索
-        }
+def critique_response(response_content):
+    """生成された応答の批評を行う関数"""
+    critique_prompt = (
+        f"{review_prompt}\n\n"
+        f"{response_content}"
+    )
+    
+    payload = {
+        "messages": [
+            {"role": "assistant", "content": critique_prompt}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 300,
+        "top_p": 0.95,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "stop": None
     }
-}
+    
+    critique_response = requests.post(base_url, headers=headers, data=json.dumps(payload))
+    
+    if critique_response.status_code == 200:
+        result = critique_response.json()
+        critique = result['choices'][0]['message']['content'].strip()
+        return critique
+    else:
+        raise Exception(f"Error during critique: {critique_response.status_code}")
 
-# 検索結果を取得
-search_results = es.search(index="legal_documents", body=query)
-retrieved_docs = search_results['hits']['hits'][:3]  # 上位3件のドキュメントを取得
+def is_critique_sufficient(critique):
+    """批評が十分かどうかを判定する"""
+    # 批評の最後に出力された 0 か 1 をチェックする
+    if "enough" in critique:
+        return True
+    elif "insufficient" in critique:
+        return False
+    else:
+        raise ValueError("Critique does not contain a valid 0 or 1 for sufficiency check.")
 
-# 検索結果をプロンプトに組み込む
-retrieved_text = "\n".join([doc['_source']['content'] for doc in retrieved_docs])
-full_prompt = f"{prompt}\n\nContext from related legal documents:\n{retrieved_text}\n\nContract:\n{contract_text}"
+def generate_response():
+    """契約書の内容に基づいて応答を生成する関数"""
+    payload = {
+        "messages": [
+            {"role": "user", "content": prompt + text}
+        ],
+        "temperature": 0.7,
+        "max_tokens": args.max_tokens,
+        "top_p": 0.95,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "stop": None
+    }
+    
+    response = requests.post(base_url, headers=headers, data=json.dumps(payload))
+    
+    if response.status_code == 200:
+        result = response.json()
+        return result['choices'][0]['message']['content'].strip()
+    else:
+        raise Exception(f"Error during generation: {response.status_code}")
 
-# リクエストペイロードの設定（検索結果を組み込む）
-payload = {
-    "messages": [{"role":"user", "content": full_prompt}],
-    "temperature": 0.7,
-    "max_tokens": args.max_tokens,
-    "top_p": 0.95,
-    "frequency_penalty": 0,
-    "presence_penalty": 0,
-    "stop": None
-}
+# 生成と批評のループ
+for iteration in range(args.max_iterations):
+    print(f"Iteration {iteration+1}/{args.max_iterations}...")
 
-# APIリクエスト
-response = requests.post(base_url, headers=headers, data=json.dumps(payload))
+    # 応答を生成
+    generated_response = generate_response()
+    print("Generated Response:")
+    print(generated_response)
 
-# レスポンスの表示
-if response.status_code == 200:
-    result = response.json()
-    print(result['choices'][0]['message']['content'].strip())
+    # 批評を生成
+    critique = critique_response(generated_response)
+    print("Critique:")
+    print(critique)
+
+    # 批評が十分かどうかを判定
+    if is_critique_sufficient(critique):
+        print("The critique is sufficient. Ending loop.")
+        break
+    else:
+        print("The critique is insufficient. Regenerating response...")
+
 else:
-    print(f"Error: {response.status_code}")
-    print(response.text)
+    print("Reached maximum iterations. Ending loop.")
