@@ -4,6 +4,13 @@
 
 
 [発表スライドを表示する (slide.pdf)](./slide.pdf)
+
+## デモ動画
+
+プロジェクトの詳細な動作やシステムのデモについては、以下の動画をご覧ください。
+
+[デモ動画を見る](https://drive.google.com/drive/my-drive?q=after:2024-09-08%20parent:0AM1Jnh3Y_25wUk9PVA)
+
 ## 構成要素
 
 - **Azure OpenAI**: 法律文書から固有表現を抽出し、リスク分析を行う。
