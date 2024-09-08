@@ -39,7 +39,8 @@ def main():
         risky_statements = risky_statements_json  # すでに辞書リストならそのまま使う
 
     # Summaryを表示
-    st.markdown(summary_md)
+    summary_md_cleaned = summary_md.replace("  ", "") 
+    st.markdown(summary_md_cleaned)
     st.markdown("## リスクステートメント")
 
     # Loop through each risk statement and display them
