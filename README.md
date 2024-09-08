@@ -8,7 +8,7 @@
 - **Azure Bing Search**: ウェブ上の情報検索を行い、RAGのためにデータを収集する。
 - **RAG (Retrieval-Augmented Generation)**: Bingからの検索結果を元に、GPT-4による文書生成を補強する技術。
 - **Streamlit**: ユーザーインターフェースとして、Webベースのアプリケーションを提供する。
-- **Cotomi**: Reflectionのためのリスク評価をサポートする。
+- **Cotomi**: Reflectionのためのリスク評価をサポートgit checkout mainする。
 
 ## システム図
 
