@@ -4,7 +4,7 @@ import json
 import concurrent.futures
 
 # Set DEBUG flag
-DEBUG = False  # Toggle this to False to disable print statements
+DEBUG = True  # Toggle this to False to disable print statements
 
 # Function to print debug information when DEBUG is set to True
 def debug_print(message):
@@ -217,15 +217,44 @@ def analyze_contract(contract_text, search_prompt, first_prompt, review_prompt, 
         "analysis": response
     }
 
+def parse_contract_analysis_response(response_text):
+    # JSON形式の文字列をパース
+    response_data = response_text
+
+    # summary部分を抽出
+    summary = response_data.get("summary", "").strip()
+
+    # risky_statement部分を抽出
+    risky_statements = response_data.get("risky_statement", [])
+
+    # risky_statementsをフォーマットして表示
+    formatted_risk_statements = []
+    for risk in risky_statements:
+        formatted_risk = {
+            "id": risk.get("id"),
+            "category": risk.get("category"),
+            "tier": risk.get("tier"),
+            "highlightText": risk.get("highlightText"),
+            "description": risk.get("description"),
+            "originalText": risk.get("originalText")
+        }
+        formatted_risk_statements.append(formatted_risk)
+
+    # 結果を辞書形式で返す
+    return [summary, formatted_risk_statements]
+
 # Sample usage
 # 新しい `call_func` 関数
-def call_func(file_path, search_prompt_path, first_prompt_path, review_prompt_path, rag_path, engine):
+def call_func(contract_text, search_prompt_path = '/mnt/app/backend/input_sample/search_prompt.txt',
+              first_prompt_path = '/mnt/app/backend/input_sample/first_prompt.txt', 
+              review_prompt_path = '/mnt/app/backend/input_sample/review_prompt.txt', 
+              rag_path = '/mnt/app/backend/input_sample/tier_examples.txt', engine = 'cotomi'):
     with open(rag_path, 'r', encoding='utf-8') as f:
         rag_text = f.read()
 
     # Load contract text
-    with open(file_path, 'r', encoding='utf-8') as f:
-        contract_text = f.read()
+    # with open(file_path, 'r', encoding='utf-8') as f:
+    #     contract_text = f.read()
 
     # Load search prompt text
     with open(search_prompt_path, 'r', encoding='utf-8') as f:
@@ -250,7 +279,8 @@ def call_func(file_path, search_prompt_path, first_prompt_path, review_prompt_pa
     )
 
     # 結果を出力
-    # print(result)  
+    print(result)
+    result = parse_contract_analysis_response(result) 
     return result
 
 
@@ -259,11 +289,14 @@ if __name__ == "__main__":
     # Set the file paths and parameters
     rag_path = '/mnt/app/backend/input_sample/tier_examples.txt'
     file_path = '/mnt/app/backend/input_sample/bereal.txt'
+    with open(file_path, 'r', encoding='utf-8') as f:
+        contract_text = f.read()
+    
     search_prompt_path = '/mnt/app/backend/input_sample/search_prompt.txt'
     first_prompt_path = '/mnt/app/backend/input_sample/first_prompt.txt'
     review_prompt_path = '/mnt/app/backend/input_sample/review_prompt.txt'
     engine = 'gpt4o'  # or 'kotomi' depending on the model you use
 
     # サーバーレス関数を呼び出し
-    response = call_func(file_path, search_prompt_path, first_prompt_path, review_prompt_path, rag_path, engine)
+    response = call_func(contract_text, search_prompt_path, first_prompt_path, review_prompt_path, rag_path, engine)
     print(response)

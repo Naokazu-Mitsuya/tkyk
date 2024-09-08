@@ -52,8 +52,13 @@ risky_statements = [
         'originalText': 'ユーザーが提供したフィードバックは、製品開発に使用される場合があります。original',  
     },
 ]
+
+import sys
+sys.path.append("../backend/src")  # `src` ディレクトリまでパスを追加
+from call_api_by_func import call_func
+
 def call_backend_api(terms_text, personal_info_text):
-    return summary_md, risky_statements
+    return call_func(terms_text) #, personal_info_text)
 
 
 st.title("契約書AI")
@@ -73,4 +78,4 @@ with col2:
 if st.button("解析"):
     response = call_backend_api(terms_text, personal_info_text)
     st.session_state.results.append(response)
-    st.switch_page("pages/result.py")
+    st.switch_page("frontend/pages/result.py")
