@@ -310,6 +310,8 @@ if __name__ == "__main__":
 
     # サーバーレス関数を呼び出し
     response = call_func(contract_text, search_prompt_path, first_prompt_path, review_prompt_path, rag_path, engine)
+    print(type(response[0]),    type(response[1]))
+    print("======================")
     print(response[0])
     print("======================")
     print(response[1])

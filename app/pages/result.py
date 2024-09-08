@@ -1,3 +1,4 @@
+import json
 import streamlit as st
 
 # Tier-specific emojis and highlight colors
@@ -25,7 +26,19 @@ def main():
         return
     
     # Unpack the results
-    summary_md, risky_statements = st.session_state['results'][-1]
+    summary_md, risky_statements_json = st.session_state['results'][-1]
+
+    # risky_statementsがJSON文字列の場合、辞書リストに変換する
+    if isinstance(risky_statements_json, str):
+        try:
+            risky_statements = json.loads(risky_statements_json)  # JSON文字列を辞書に変換
+        except json.JSONDecodeError:
+            st.error("リスクステートメントのデコードに失敗しました。")
+            return
+    else:
+        risky_statements = risky_statements_json  # すでに辞書リストならそのまま使う
+
+    # Summaryを表示
     st.markdown(summary_md)
     st.markdown("## リスクステートメント")
 
