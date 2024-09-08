@@ -1,5 +1,6 @@
 from asyncio import sleep
 import streamlit as st
+import os
 
 if "results" not in st.session_state:
     st.session_state.results = []
@@ -69,8 +70,18 @@ def call_backend_api(terms_text, personal_info_text):
 
     else:
         raise Exception("No text provided for analysis.")
+
+
+def load_css(file_name):
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"{file_path} が見つかりません。")
+    with open(file_path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     
 
+# 統合CSSを読み込む
+load_css("pages/style.css")
 
 st.title("Guardign AI")
 st.header("契約書情報入力")
@@ -90,4 +101,4 @@ if st.button("解析"):
     response = call_backend_api(terms_text, personal_info_text)
     # sleep(100)
     st.session_state.results.append(response)
-    st.switch_page("pages/result.py")
+    st.switch_page("pages/loading.py")
