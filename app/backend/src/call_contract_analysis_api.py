@@ -44,11 +44,11 @@ def call_analyze_contract_api(file_path, search_prompt_path, first_prompt_path, 
 
 if __name__ == "__main__":
     # Set the file paths and API endpoint
-    rag_path = '/mnt/input_sample/tier_examples.txt'
-    file_path = '/mnt/input_sample/bereal.txt'
-    search_prompt_path = '/mnt/input_sample/search_prompt.txt'
-    first_prompt_path = '/mnt/input_sample/first_prompt.txt'
-    review_prompt_path = '/mnt/input_sample/review_prompt.txt'
+    rag_path = '/mnt/app/backend/input_sample/tier_examples.txt'
+    file_path = '/mnt/app/backend/input_sample/bereal.txt'
+    search_prompt_path = '/mnt/app/backend/input_sample/search_prompt.txt'
+    first_prompt_path = '/mnt/app/backend/input_sample/first_prompt.txt'
+    review_prompt_path = '/mnt/app/backend/input_sample/review_prompt.txt'
     engine = 'kotomi'  # or 'kotomi' if using a different model
     api_url = 'http://127.0.0.1:5000/analyze_contract'  # Your Flask server's endpoint
 
