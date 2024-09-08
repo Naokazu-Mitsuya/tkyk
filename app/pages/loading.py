@@ -5,6 +5,22 @@ import time
 import random
 import os
 
+import sys
+# sys.path.append("backend/src")  # `src` ディレクトリまでパスを追加
+# 実際にAI model にAPIコールを投げる関数
+from backend.src.call_api_by_func import call_func
+def call_backend_api(terms_text, personal_info_text):
+    if terms_text != "":
+        response_terms = call_func(terms_text)
+        return response_terms
+    
+    elif personal_info_text != "":
+        response_personal_info = call_func(personal_info_text)
+        return response_personal_info
+
+    else:
+        raise Exception("No text provided for analysis.")
+
 # CSSファイルを読み込む関数
 def load_css(file_name):
     file_path = os.path.join(os.path.dirname(__file__), file_name)
@@ -73,9 +89,11 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+# Makes API calls here.
+terms_text, personal_info_text = st.session_state["params"]
+response = call_backend_api(terms_text, personal_info_text)
+st.session_state.results.append(response)
 
-# 擬似的な処理の遅延
-time.sleep(2)
     
 file_path = os.path.join(os.path.dirname(__file__), "result.py")
 # st.switch_page("./result.py")

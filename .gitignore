@@ -1,4 +1,5 @@
 # input_sample/
+__pycache__/
 src/resources/
 *.xml
 *.db

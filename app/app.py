@@ -55,21 +55,6 @@ if "results" not in st.session_state:
 #     },
 # ]
 
-import sys
-# sys.path.append("backend/src")  # `src` ディレクトリまでパスを追加
-from backend.src.call_api_by_func import call_func
-
-def call_backend_api(terms_text, personal_info_text):
-    if terms_text != "":
-        response_terms = call_func(terms_text)
-        return response_terms
-    
-    elif personal_info_text != "":
-        response_personal_info = call_func(personal_info_text)
-        return response_personal_info
-
-    else:
-        raise Exception("No text provided for analysis.")
 
 
 def load_css(file_name):
@@ -98,7 +83,5 @@ with col2:
     personal_info_text = st.text_area("個人情報関連テキスト", height=200)
 
 if st.button("解析"):
-    response = call_backend_api(terms_text, personal_info_text)
-    # sleep(100)
-    st.session_state.results.append(response)
+    st.session_state.params = (terms_text, personal_info_text)
     st.switch_page("pages/loading.py")
