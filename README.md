@@ -2,6 +2,8 @@
 
 このプロジェクトは、法律文書のリスク評価を行うためのシステムです。Azure OpenAI（GPT-4）やCotomiを利用し、法律文書からの固有表現抽出、検索結果のRAG（Retrieval-Augmented Generation）、および度合い別のリスク事例集を基に、反射的評価（Reflection）を行います。
 
+
+[発表スライドを表示する (slide.pdf)](./slide.pdf)
 ## 構成要素
 
 - **Azure OpenAI**: 法律文書から固有表現を抽出し、リスク分析を行う。
@@ -49,3 +51,4 @@ cd /mnt/app
 python app.py
 ```
 これにより、StreamlitベースのWebアプリケーションが起動され、ブラウザ上から法律文書のリスク評価を行うことができます。
+
