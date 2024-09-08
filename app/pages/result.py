@@ -3,11 +3,11 @@ import streamlit as st
 
 # Tier-specific emojis and highlight colors
 tier_emojis = {
-    1: "⚫☠️",  # Very high risk
-    2: "🔴🔥",  # High risk
-    3: "🟠⚡",  # Medium risk
-    4: "🟡⚠️",  # Medium-low risk
-    5: "🟢✅",  # Low risk
+    1: "️☠️☠️️️☠☠️☠️️️️️️",  # Very high risk
+    2: "🔥🔥🔥🔥",  # High risk
+    3: "⚡⚡⚡",  # Medium risk
+    4: "⚠️⚠️", # Medium-low risk
+    5: "✅",  # Low risk
 }
 
 tier_colors = {
@@ -49,7 +49,7 @@ def main():
         cols = st.columns([1, 4])  
 
         # Display the emoji corresponding to the risk tier
-        cols[0].markdown(f"<h1>{tier_emojis[statement['tier']]}</h1>", unsafe_allow_html=True)
+        cols[0].markdown(f"<h3>{tier_emojis[statement['tier']]}</h3>", unsafe_allow_html=True)
 
         # Set the background color based on the risk tier
         highlight_color = tier_colors[statement['tier']]
