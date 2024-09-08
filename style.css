@@ -1,0 +1,93 @@
+/* Highlight CSS */
+mark {
+    background-color: yellow; /* ハイライト背景色を黄色に */
+    color: black;             /* 文字色を黒に */
+}
+
+/* Button CSS */
+div.stButton {
+    display: flex;
+    justify-content: center; /* 水平中央揃え */
+    align-items: center;     /* 垂直中央揃え */
+    cursor: pointer;         /* ポインタカーソルにする */
+    padding: 60px 20px;      /* 内側の余白を設定 */
+}
+div.stButton > button:first-child {
+    font-weight: bold;       /* 文字を太字にする */
+    background: #ddd;        /* 背景色を薄いグレーにする */
+    border: none;            /* ボーダーを削除 */
+    padding: 10px 20px;      /* 内側の余白を設定 */
+    border-radius: 5px;      /* 角を丸くする */
+}
+
+/* Loading CSS */
+html {
+    height: 100%; /* HTML要素の高さを100%に設定 */
+}
+
+body {
+    background-color: #192B33; /* 背景色をダークブルーに設定 */
+    margin: 0; /* マージンをリセット */
+    display: flex;
+    justify-content: center; /* 水平中央揃え */
+    align-items: center;     /* 垂直中央揃え */
+    height: 100vh; /* ビューポートの高さに合わせる */
+}
+
+.loader {
+    position: absolute;
+    top: calc(50% - 32px);
+    left: calc(50% - 32px);
+    width: 64px;
+    height: 64px;
+  }
+
+.loader div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-sizing: border-box;
+    opacity: 0.8;
+}
+
+.one {
+    border-top: 1px solid #8FB259; /* 緑色の上辺ボーダー */
+    animation: rotate-left 1s linear infinite; /* 左回転アニメーション */
+}
+
+.two {
+    border-right: 1px solid #CCCC52; /* 黄色の右辺ボーダー */
+    animation: rotate-right 1s linear infinite; /* 右回転アニメーション */
+}
+
+.three {
+    border-bottom: 1px solid #FFD933; /* 黄緑色の下辺ボーダー */
+    animation: rotate-right 1s linear infinite; /* 右回転アニメーション */
+}
+
+.four {
+    border-left: 1px solid #FF7F00; /* オレンジ色の左辺ボーダー */
+    animation: rotate-right 1s linear infinite; /* 右回転アニメーション */
+}
+
+@keyframes rotate-left {
+    0% {
+        transform: rotate(360deg); /* 360度回転 */
+    }
+    100% {
+        transform: rotate(0deg); /* 0度に戻す */
+    }
+}
+
+@keyframes rotate-right {
+    0% {
+        transform: rotate(0deg); /* 0度からスタート */
+    }
+    100% {
+        transform: rotate(360deg); /* 360度回転 */
+    }
+}
+
