@@ -3,6 +3,14 @@ import streamlit as st
 if "results" not in st.session_state:
     st.session_state.results = []
 
+# CSSファイルを読み込む関数
+def load_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# 統合CSSを読み込む
+load_css("/home/mitsuya/wsl-tkyk/front_copy/tkyk/src/pages/style.css")
+
 summary_md = """
 # Summary
 ## 個人情報
@@ -73,4 +81,4 @@ with col2:
 if st.button("解析"):
     response = call_backend_api(terms_text, personal_info_text)
     st.session_state.results.append(response)
-    st.switch_page("pages/result.py")
+    st.switch_page("pages/loading.py")
