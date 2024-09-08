@@ -1,9 +1,8 @@
 import streamlit as st
-#
-## Frontend はsummary_md というmarkdownの表と、
-#  risky_statements というリスクステートメントのリストを受け取る。これはjson???
 
-# Frontendが受け取るデータの例
+if "results" not in st.session_state:
+    st.session_state.results = []
+
 summary_md = """
 # Summary
 ## 個人情報
@@ -53,53 +52,25 @@ risky_statements = [
         'originalText': 'ユーザーが提供したフィードバックは、製品開発に使用される場合があります。original',  
     },
 ]
+def call_backend_api(terms_text, personal_info_text):
+    return summary_md, risky_statements
 
-# Tier-specific emojis and highlight colors
-tier_emojis = {
-    1: "⚫☠️",  # Very high risk
-    2: "🔴🔥",  # High risk
-    3: "🟠⚡",  # Medium risk
-    4: "🟡⚠️",  # Medium-low risk
-    5: "🟢✅",  # Low risk
-}
 
-tier_colors = {
-    1: "#FF4500",  # Orange red for very high risk
-    2: "#FFA07A",  # Light coral for high risk
-    3: "#FFD700",  # Gold for medium risk
-    4: "#FFEC94",  # Light yellow for medium-low risk
-    5: "#DFF2BF",  # Light green for low risk
-}
+st.title("契約書AI")
+st.header("契約書情報入力")
+st.write("以下のテキストボックスに契約書情報を入力してください。")
 
-def main():
-    st.markdown(summary_md)
-    st.markdown("## リスクステートメント")
+col1, col2 = st.columns(2)
 
-    for statement in risky_statements:
-        cols = st.columns([1, 4])  # Create two columns: one for the emoji, one for the text
+with col1:
+    st.subheader("利用規約")
+    terms_text = st.text_area("利用規約テキスト", height=200)
 
-        # Display emoji corresponding to the tier
-        cols[0].markdown(f"<h1>{tier_emojis[statement['tier']]}</h1>", unsafe_allow_html=True)
+with col2:
+    st.subheader("個人情報関連")
+    personal_info_text = st.text_area("個人情報関連テキスト", height=200)
 
-        # Highlight the text based on tier and make it clickable to trigger the popover
-        highlight_color = tier_colors[statement['tier']]
-
-        # Render clickable highlighted text as the trigger for the popover
-        html = f"""
-        <span style="background-color:{highlight_color}; padding: 10px; cursor:pointer;" onclick="window.open('', 'popover')">
-        {statement['highlightText']}
-        </span>
-        """
-    
-        # Display the text as clickable HTML
-        cols[1].markdown(html, unsafe_allow_html=True)
-
-    
-        # Show a popover with description and original text when clicked
-        with cols[1].popover(f"詳細"):
-            st.write(f"**Description:** {statement['description']}")
-            st.write(f"**Original Text:** {statement.get('originalText', 'No original text available.')}")
-    # Loop through risky statements and render them
-
-if __name__ == "__main__":
-    main()
+if st.button("解析"):
+    response = call_backend_api(terms_text, personal_info_text)
+    st.session_state.results.append(response)
+    st.switch_page("pages/result.py")
