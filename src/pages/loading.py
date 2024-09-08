@@ -3,14 +3,18 @@ import pandas as pd
 from io import StringIO
 import time
 import random
+import os
 
 # CSSファイルを読み込む関数
 def load_css(file_name):
-    with open(file_name) as f:
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"{file_path} が見つかりません。")
+    with open(file_path) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # 統合CSSを読み込む
-load_css("/home/mitsuya/wsl-tkyk/front_copy/tkyk/src/pages/style.css")
+load_css("style.css")
 
 # ページ表示ロジック
 st.markdown('<div class="loader"><div class="one"></div><div class="two"></div><div class="three"></div><div class="four"></div></div>', unsafe_allow_html=True)
@@ -61,7 +65,7 @@ st.markdown(
         border-width: 10px;
         border-style: solid;
         border-color: transparent transparent #f1f1f1 transparent;
-    }
+    }""" + f"""
     </style>
     <div class="bubble">
         {selected_message}
@@ -73,4 +77,6 @@ st.markdown(
 # 擬似的な処理の遅延
 time.sleep(15)
     
-st.switch_page("/home/mitsuya/wsl-tkyk/front_copy/tkyk/src/pages/result.py")
+file_path = os.path.join(os.path.dirname(__file__), "result.py")
+# st.switch_page("./result.py")
+st.switch_page(file_path)

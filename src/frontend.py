@@ -1,15 +1,18 @@
 import streamlit as st
+import os
 
 if "results" not in st.session_state:
     st.session_state.results = []
 
-# CSSファイルを読み込む関数
 def load_css(file_name):
-    with open(file_name) as f:
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"{file_path} が見つかりません。")
+    with open(file_path) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # 統合CSSを読み込む
-load_css("/home/mitsuya/wsl-tkyk/front_copy/tkyk/src/pages/style.css")
+load_css("pages/style.css")
 
 summary_md = """
 # Summary
