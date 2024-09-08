@@ -1,4 +1,5 @@
 import streamlit as st
+
 # Tier-specific emojis and highlight colors
 tier_emojis = {
     1: "⚫☠️",  # Very high risk
@@ -17,39 +18,39 @@ tier_colors = {
 }
 
 def main():
-    if st.session_state.results is None or len(st.session_state.results) == 0:
+    # If no results are found in the session state
+    if st.session_state.get('results') is None or len(st.session_state['results']) == 0:
         st.markdown("No results found.")
-        st.session_state.results = []
+        st.session_state['results'] = []
         return
-    summary_md, risky_statements = st.session_state.results[-1]
+    
+    # Unpack the results
+    summary_md, risky_statements = st.session_state['results'][-1]
     st.markdown(summary_md)
     st.markdown("## リスクステートメント")
 
+    # Loop through each risk statement and display them
     for statement in risky_statements:
-        cols = st.columns([1, 4])  # Create two columns: one for the emoji, one for the text
+        # Create two columns: one for the emoji and one for the text
+        cols = st.columns([1, 4])  
 
-        # Display emoji corresponding to the tier
+        # Display the emoji corresponding to the risk tier
         cols[0].markdown(f"<h1>{tier_emojis[statement['tier']]}</h1>", unsafe_allow_html=True)
 
-        # Highlight the text based on tier and make it clickable to trigger the popover
+        # Set the background color based on the risk tier
         highlight_color = tier_colors[statement['tier']]
-
-        # Render clickable highlighted text as the trigger for the popover
         html = f"""
-        <span style="background-color:{highlight_color}; padding: 10px; cursor:pointer;" onclick="window.open('', 'popover')">
+        <span style="background-color:{highlight_color}; padding: 10px;">
         {statement['highlightText']}
         </span>
         """
-    
-        # Display the text as clickable HTML
+        # Display the highlighted text
         cols[1].markdown(html, unsafe_allow_html=True)
 
-    
-        # Show a popover with description and original text when clicked
-        with cols[1].popover(f"詳細"):
+        # Use expander to show the description and original text when clicked
+        with cols[1].expander("詳細を表示"):
             st.write(f"**Description:** {statement['description']}")
             st.write(f"**Original Text:** {statement.get('originalText', 'No original text available.')}")
-    # Loop through risky statements and render them
 
 if __name__ == "__main__":
     main()

@@ -61,18 +61,18 @@ from backend.src.call_api_by_func import call_func
 def call_backend_api(terms_text, personal_info_text):
     if terms_text != "":
         response_terms = call_func(terms_text)
-    else:
-        response_terms = ""
+        return response_terms
     
-    if personal_info_text != "":
+    elif personal_info_text != "":
         response_personal_info = call_func(personal_info_text)
+        return response_personal_info
+
     else:
-        response_personal_info = ""
+        raise Exception("No text provided for analysis.")
+    
 
-    return response_terms, response_personal_info
 
-
-st.title("契約書AI")
+st.title("Guardign AI")
 st.header("契約書情報入力")
 st.write("以下のテキストボックスに契約書情報を入力してください。")
 

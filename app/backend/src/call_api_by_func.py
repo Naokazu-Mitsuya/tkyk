@@ -195,7 +195,7 @@ def reflection_loop(final_prompt, review_prompt, engine, max_iterations=5):
     return generated_response
 
 # Direct function call
-def analyze_contract(contract_text, search_prompt, first_prompt, review_prompt, rag_text=None, engine='gpt4o', max_iterations=5):
+def analyze_contract(contract_text, search_prompt, first_prompt, review_prompt, rag_text=None, engine='gpt4o', max_iterations=1):
     if not contract_text or not search_prompt:
         return {"error": "contract_text and search_prompt are required"}
     
@@ -217,31 +217,42 @@ def analyze_contract(contract_text, search_prompt, first_prompt, review_prompt, 
         "analysis": response
     }
 
-def parse_contract_analysis_response(response_text):
-    # JSON形式の文字列をパース
-    response_data = response_text
+import re
+import json
 
-    # summary部分を抽出
-    summary = response_data.get("summary", "").strip()
+def extract_summary_and_risk_statements(analysis_text):
+    # summaryの部分を抽出
+    summary_match = re.search(r'"summary":\s*"([^"]*)"', analysis_text, re.DOTALL)
+    summary = summary_match.group(1).strip() if summary_match else ""
 
-    # risky_statement部分を抽出
-    risky_statements = response_data.get("risky_statement", [])
+    # risky_statementの部分を抽出
+    risky_statements = []
+    risky_statement_matches = re.findall(r'\{(.*?)\}', analysis_text, re.DOTALL)
+    
+    for match in risky_statement_matches:
+        # 各リスクステートメントの詳細情報を抽出
+        id_match = re.search(r'"id":\s*(\d+)', match)
+        category_match = re.search(r'"category":\s*"([^"]*)"', match)
+        tier_match = re.search(r'"tier":\s*(\d+)', match)
+        highlight_text_match = re.search(r'"highlightText":\s*"([^"]*)"', match)
+        description_match = re.search(r'"description":\s*"([^"]*)"', match)
+        original_text_match = re.search(r'"originalText":\s*"([^"]*)"', match)
 
-    # risky_statementsをフォーマットして表示
-    formatted_risk_statements = []
-    for risk in risky_statements:
-        formatted_risk = {
-            "id": risk.get("id"),
-            "category": risk.get("category"),
-            "tier": risk.get("tier"),
-            "highlightText": risk.get("highlightText"),
-            "description": risk.get("description"),
-            "originalText": risk.get("originalText")
-        }
-        formatted_risk_statements.append(formatted_risk)
+        # リスクステートメントの各フィールドを辞書にして追加
+        risky_statements.append({
+            "id": int(id_match.group(1)) if id_match else None,
+            "category": category_match.group(1) if category_match else "",
+            "tier": int(tier_match.group(1)) if tier_match else None,
+            "highlightText": highlight_text_match.group(1) if highlight_text_match else "",
+            "description": description_match.group(1) if description_match else "",
+            "originalText": original_text_match.group(1) if original_text_match else ""
+        })
 
-    # 結果を辞書形式で返す
-    return [summary, formatted_risk_statements]
+    # risky_statementsをJSON文字列に変換
+    risky_statements_json = json.dumps(risky_statements, ensure_ascii=False, indent=2)
+
+    return summary, risky_statements_json
+
 
 # Sample usage
 # 新しい `call_func` 関数
@@ -280,7 +291,7 @@ def call_func(contract_text, search_prompt_path = '/mnt/app/backend/input_sample
 
     # 結果を出力
     print(result)
-    result = parse_contract_analysis_response(result) 
+    result = extract_summary_and_risk_statements(result['analysis'])
     return result
 
 
@@ -299,4 +310,6 @@ if __name__ == "__main__":
 
     # サーバーレス関数を呼び出し
     response = call_func(contract_text, search_prompt_path, first_prompt_path, review_prompt_path, rag_path, engine)
-    print(response)
+    print(response[0])
+    print("======================")
+    print(response[1])
